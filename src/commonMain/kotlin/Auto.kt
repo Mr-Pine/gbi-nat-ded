@@ -12,23 +12,22 @@ fun findProof(formula: Formula, premises: List<Formula>): ProofTree? {
         return forwardProof
     }
 
-    when {
-
-        formula is Implication -> {
+    when (formula) {
+        is Implication -> {
             val proof = findProof(formula.sub2, premises + formula.sub1)
             if (proof != null) {
                 return ProofTree(formula, ImplIntro, listOf(proof))
             }
         }
 
-        formula is Neg -> {
+        is Neg -> {
             val proof = findProof(Implication(formula.sub, False), premises)
             if (proof != null) {
                 return ProofTree(formula, NotIntro, listOf(proof))
             }
         }
 
-        formula is Conj -> {
+        is Conj -> {
             val proofA = findProof(formula.sub1, premises)
             if (proofA != null) {
                 val proofB = findProof(formula.sub2, premises)
@@ -38,7 +37,7 @@ fun findProof(formula: Formula, premises: List<Formula>): ProofTree? {
             }
         }
 
-        formula is Disj -> {
+        is Disj -> {
             val proofA = findProof(formula.sub1, premises)
             if (proofA != null) {
                 return ProofTree(formula, OrIntro1, listOf(proofA))
@@ -48,6 +47,8 @@ fun findProof(formula: Formula, premises: List<Formula>): ProofTree? {
                 return ProofTree(formula, OrIntro2, listOf(proofB))
             }
         }
+
+        else -> {}
     }
 
     forwards.forEach {
