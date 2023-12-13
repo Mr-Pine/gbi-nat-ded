@@ -90,30 +90,34 @@ fun forwardProofs(premises: List<Formula>): Set<ProofTree> {
 }
 
 fun forwardProofs(premises: List<Formula>, proofTree: ProofTree): Set<ProofTree> =
-    when(proofTree.formula) {
-        is Conj ->
-            forwardProofs(premises, ProofTree(proofTree.formula.sub1, AndElim1, listOf(proofTree))) +
-                    forwardProofs(premises, ProofTree(proofTree.formula.sub2, AndElim2, listOf(proofTree)))
+    if (premises.isEmpty()) {
+        when (proofTree.formula) {
+            is Conj ->
+                forwardProofs(premises, ProofTree(proofTree.formula.sub1, AndElim1, listOf(proofTree))) +
+                        forwardProofs(premises, ProofTree(proofTree.formula.sub2, AndElim2, listOf(proofTree)))
 
-        is Neg -> {
-            val proofA = findProof(proofTree.formula.sub, premises)
-            if(proofA != null) {
-                val proof = ProofTree(False, NotElim, listOf(proofA, proofTree))
-                forwardProofs(premises, proof)
-            } else {
-                setOf()
+            is Neg -> {
+                val proofA = findProof(proofTree.formula.sub, premises - proofTree.formula)
+                if (proofA != null) {
+                    val proof = ProofTree(False, NotElim, listOf(proofA, proofTree))
+                    forwardProofs(premises, proof)
+                } else {
+                    setOf()
+                }
             }
-        }
 
-        is Implication -> {
-            val proofA = findProof(proofTree.formula.sub1, premises)
-            if(proofA != null) {
-                val proof = ProofTree(proofTree.formula.sub2, ImplElim, listOf(proofA, proofTree))
-                forwardProofs(premises, proof)
-            } else {
-                setOf()
+            is Implication -> {
+                val proofA = findProof(proofTree.formula.sub1, premises - proofTree.formula)
+                if (proofA != null) {
+                    val proof = ProofTree(proofTree.formula.sub2, ImplElim, listOf(proofA, proofTree))
+                    forwardProofs(premises, proof)
+                } else {
+                    setOf()
+                }
             }
-        }
 
-        else -> setOf()
+            else -> setOf()
+        }
+    } else {
+        setOf()
     } + proofTree
